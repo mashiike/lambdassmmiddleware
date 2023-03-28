@@ -1,6 +1,6 @@
 # lambdassmmiddlware
 AWS Lambda middleware of ssm parameters middleware for Golang
-don't need any extensions to use this middleware, get paramters using the SDK.
+don't need any extensions to use this middleware, get parameters using the SDK.
 
 ```go
 package main
