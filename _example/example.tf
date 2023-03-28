@@ -61,3 +61,10 @@ resource "aws_ssm_parameter" "bar" {
   type        = "String"
   value       = "bar values"
 }
+
+resource "aws_ssm_parameter" "hoge" {
+  name        = "/lambdassmmiddleware/paths/hoge"
+  description = "hoge for lambdassmmiddleware"
+  type        = "String"
+  value       = "hoge values"
+}
