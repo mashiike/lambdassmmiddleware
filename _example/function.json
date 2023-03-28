@@ -1,0 +1,18 @@
+{
+  "Description": "Example of parameters-and-secrets middleware [https://github.com/mashiike/lambdassmmiddleware]",
+  "Environment": {
+      "Variables": {
+          "SSMNAMES": "/lambdassmmiddleware/foo,/lambdassmmiddleware/bar"
+      }
+  },
+  "FunctionName": "lambdassmmiddlewareexample",
+  "Handler": "bootstrap",
+  "MemorySize": 128,
+  "Role": "arn:aws:iam::{{ must_env `AWS_ACCOUNT_ID` }}:role/lambdassmmiddleware",
+  "Runtime": "provided.al2",
+  "Tags": {},
+  "Timeout": 5,
+  "TracingConfig": {
+      "Mode": "PassThrough"
+  }
+}
