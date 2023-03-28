@@ -2,6 +2,7 @@
   "Description": "Example of parameters-and-secrets middleware [https://github.com/mashiike/lambdassmmiddleware]",
   "Environment": {
       "Variables": {
+          "SSMPATHS": "/lambdassmmiddleware/paths/",
           "SSMNAMES": "/lambdassmmiddleware/foo,/lambdassmmiddleware/bar"
       }
   },

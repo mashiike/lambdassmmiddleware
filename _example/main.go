@@ -18,14 +18,17 @@ func main() {
 	handler, err := lambdassmmiddleware.Wrap(
 		func(ctx context.Context, payload json.RawMessage) (interface{}, error) {
 			return map[string]interface{}{
-				"env_foo": os.Getenv("SSM_FOO"),
-				"env_bar": os.Getenv("SSM_BAR"),
-				"foo":     ctx.Value(ssmContextKey("/lambdassmmiddleware/foo")),
-				"bar":     ctx.Value(ssmContextKey("/lambdassmmiddleware/bar")),
-				"tora":    ctx.Value(ssmContextKey("/lambdassmmiddleware/tora")),
+				"env_hoge": os.Getenv("SSM_HOGE"),
+				"env_foo":  os.Getenv("SSM_FOO"),
+				"env_bar":  os.Getenv("SSM_BAR"),
+				"hoge":     ctx.Value(ssmContextKey("/lambdassmmiddleware/paths/hoge")),
+				"foo":      ctx.Value(ssmContextKey("/lambdassmmiddleware/foo")),
+				"bar":      ctx.Value(ssmContextKey("/lambdassmmiddleware/bar")),
+				"tora":     ctx.Value(ssmContextKey("/lambdassmmiddleware/tora")),
 			}, nil
 		},
 		&lambdassmmiddleware.Config{
+			Paths:          strings.Split(os.Getenv("SSMPATHS"), ","),
 			Names:          strings.Split(os.Getenv("SSMNAMES"), ","),
 			ContextKeyFunc: func(key string) interface{} { return ssmContextKey(key) },
 			EnvPrefix:      "SSM_",

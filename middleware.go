@@ -17,6 +17,7 @@ import (
 
 type Config struct {
 	Names          []string
+	Paths          []string
 	Client         *ssm.Client
 	ContextKeyFunc func(key string) interface{}
 	SetEnv         bool
@@ -24,9 +25,10 @@ type Config struct {
 	withDecryption *bool
 	CacheTTL       time.Duration
 
-	mu             sync.RWMutex
-	cache          map[string]string
-	cacheFetchedAt map[string]time.Time
+	mu                 sync.RWMutex
+	cache              map[string]string
+	cachePathFetchedAt map[string]time.Time
+	cacheFetchedAt     map[string]time.Time
 }
 
 func (cfg *Config) WithDecryption(value bool) *Config {
@@ -37,6 +39,20 @@ func (cfg *Config) WithDecryption(value bool) *Config {
 func (cfg *Config) WithClient(client *ssm.Client) *Config {
 	cfg.Client = client
 	return cfg
+}
+
+func (cfg *Config) isChachedPath(path string) bool {
+	cfg.mu.RLock()
+	defer cfg.mu.RUnlock()
+	if cfg.cachePathFetchedAt == nil {
+		return false
+	}
+	fetchedAt, ok := cfg.cachePathFetchedAt[path]
+	if !ok || fetchedAt.IsZero() {
+		return false
+	}
+	lifetime := flextime.Since(fetchedAt)
+	return lifetime < cfg.CacheTTL
 }
 
 func (cfg *Config) getFromChache(name string) (string, bool) {
@@ -54,6 +70,15 @@ func (cfg *Config) getFromChache(name string) (string, bool) {
 		return cfg.cache[name], true
 	}
 	return "", false
+}
+
+func (cfg *Config) setCachePathTime(path string) {
+	cfg.mu.Lock()
+	defer cfg.mu.Unlock()
+	if cfg.cachePathFetchedAt == nil {
+		cfg.cachePathFetchedAt = make(map[string]time.Time)
+	}
+	cfg.cachePathFetchedAt[path] = flextime.Now()
 }
 
 func (cfg *Config) setCache(name string, value string) {
@@ -117,6 +142,35 @@ func (cfg *Config) fetchParametersAndSecrets(ctx context.Context) (context.Conte
 			os.Setenv(envKey, value)
 		}
 		return context.WithValue(ctx, cfg.ContextKeyFunc(name), value)
+	}
+	refetchPaths := make([]string, 0, len(cfg.Paths))
+	for _, path := range cfg.Paths {
+		if cfg.isChachedPath(path) {
+			continue
+		}
+		refetchPaths = append(refetchPaths, path)
+	}
+	if len(refetchPaths) > 0 {
+		for _, path := range refetchPaths {
+			p := ssm.NewGetParametersByPathPaginator(cfg.Client, &ssm.GetParametersByPathInput{
+				Path:           &path,
+				WithDecryption: cfg.withDecryption,
+			})
+			for p.HasMorePages() {
+				output, err := p.NextPage(ctx)
+				if err != nil {
+					return nil, err
+				}
+				cfg.setCachePathTime(path)
+				for _, param := range output.Parameters {
+					cfg.setCache(*param.Name, *param.Value)
+					ctx = setFunc(ctx, *param.Name, *param.Value)
+				}
+			}
+		}
+	}
+	if len(cfg.Names) == 0 {
+		return ctx, nil
 	}
 	refetchNames := make([]string, 0, len(cfg.Names))
 	for _, name := range cfg.Names {
