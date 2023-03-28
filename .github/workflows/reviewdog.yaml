@@ -21,7 +21,7 @@ jobs:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           level: warning
           golangci_lint_flags: "--config=.golangci.yaml"
-          filter_mode: diff_context
+          filter_mode: nofilter
           reporter: github-pr-review
           fail_on_error: true
 
@@ -33,7 +33,7 @@ jobs:
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           reporter: github-pr-review
-          filter_mode: diff_context
+          filter_mode: nofilter
           fail_on_error: true
 
   actionlint:
@@ -43,7 +43,7 @@ jobs:
       - uses: reviewdog/action-actionlint@v1
         with:
           reporter: github-pr-review
-          filter_mode: diff_context
+          filter_mode: nofilter
           fail_on_error: true
 
   misspell:
@@ -54,5 +54,5 @@ jobs:
         with:
           reporter: github-pr-review
           level: warning
-          filter_mode: diff_context
+          filter_mode: nofilter
           fail_on_error: true
