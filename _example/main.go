@@ -16,6 +16,14 @@ type ssmContextKey string
 
 func main() {
 	handler, err := lambdassmmiddleware.Wrap(
+		&lambdassmmiddleware.Config{
+			Paths:          strings.Split(os.Getenv("SSMPATHS"), ","),
+			Names:          strings.Split(os.Getenv("SSMNAMES"), ","),
+			ContextKeyFunc: func(key string) interface{} { return ssmContextKey(key) },
+			EnvPrefix:      "SSM_",
+			CacheTTL:       24 * time.Hour,
+			SetEnv:         true,
+		},
 		func(ctx context.Context, payload json.RawMessage) (interface{}, error) {
 			return map[string]interface{}{
 				"env_hoge": os.Getenv("SSM_HOGE"),
@@ -26,14 +34,6 @@ func main() {
 				"bar":      ctx.Value(ssmContextKey("/lambdassmmiddleware/bar")),
 				"tora":     ctx.Value(ssmContextKey("/lambdassmmiddleware/tora")),
 			}, nil
-		},
-		&lambdassmmiddleware.Config{
-			Paths:          strings.Split(os.Getenv("SSMPATHS"), ","),
-			Names:          strings.Split(os.Getenv("SSMNAMES"), ","),
-			ContextKeyFunc: func(key string) interface{} { return ssmContextKey(key) },
-			EnvPrefix:      "SSM_",
-			CacheTTL:       24 * time.Hour,
-			SetEnv:         true,
 		},
 	)
 	if err != nil {

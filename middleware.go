@@ -92,7 +92,7 @@ func (cfg *Config) setCache(name string, value string) {
 	cfg.cache[name] = value
 }
 
-func Wrap(handler interface{}, cfg *Config) (lambda.Handler, error) {
+func Wrap(cfg *Config, handler interface{}) (lambda.Handler, error) {
 	m, err := New(cfg)
 	if err != nil {
 		return nil, err

@@ -196,7 +196,7 @@ func TestMiddleware(t *testing.T) {
 					)
 				}),
 			)
-			h, err := Wrap(c.handler, c.cfg.WithClient(client))
+			h, err := Wrap(c.cfg.WithClient(client), c.handler)
 			require.NoError(t, err)
 			output, err := h.Invoke(context.Background(), c.payload)
 			if c.errString == "" {
