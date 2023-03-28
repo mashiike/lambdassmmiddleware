@@ -169,7 +169,7 @@ func TestMiddleware(t *testing.T) {
 				},
 			},
 			handler: func(ctx context.Context, payload json.RawMessage) (interface{}, error) {
-				return nil, errors.New("unexpected exection")
+				return nil, errors.New("unexpected execution")
 			},
 			apiErr:    errors.New("unknown error"),
 			payload:   []byte(`"hoge"`),
