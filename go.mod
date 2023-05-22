@@ -10,7 +10,7 @@ require (
 	github.com/aws/aws-sdk-go-v2/service/ssm v1.36.0
 	github.com/aws/smithy-go v1.13.5
 	github.com/mashiike/lambdamiddleware v0.1.0
-	github.com/stretchr/testify v1.8.2
+	github.com/stretchr/testify v1.8.3
 )
 
 require (
